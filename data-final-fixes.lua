@@ -1,5 +1,16 @@
 local buffed_entities_to_extend = {}
 
+local function get_quality_buff(quality_level)
+	local quality_buff_by_level = {
+		[0] = 1,
+		1.3,
+		1.6,
+		1.9,
+		2.5,
+	}
+	return quality_buff_by_level[quality_level] or ((quality_level + 1) / 2)
+end
+
 local function add_to_description(type, prototype, localised_string)
 	if prototype.localised_description and prototype.localised_description ~= '' then
 		prototype.localised_description = {'', prototype.localised_description, '\n', localised_string}
@@ -55,6 +66,7 @@ local function make_effected_by_quality(entity, buff_function, quality_descripti
 		local buffed_entity = table.deepcopy(entity)
 		buff_function(buffed_entity, quality_level)
 
+		buffed_entity.hidden = true
 		buffed_entity.name = entity.name .. '-' .. quality.name
 		buffed_entity.localised_name = entity.localised_name or {
 			'?',
@@ -96,8 +108,7 @@ end
 for _, chest_type in pairs {'container', 'logistic-container', 'linked-container'} do
 	for _, chest in pairs(data.raw[chest_type]) do
 		make_effected_by_quality(chest, function(entity, quality_level)
-			local old_inventory_size = entity.inventory_size
-			entity.inventory_size = old_inventory_size + math.floor(quality_level / 10 * old_inventory_size)
+			entity.inventory_size = math.floor(entity.inventory_size * get_quality_buff(quality_level))
 		end, {
 			{'description.storage-size'}
 		})
@@ -107,13 +118,39 @@ end
 for _, elevated_rail_type in pairs {'rail-support', 'rail-ramp'} do
 	for _, elevated_rail in pairs(data.raw[elevated_rail_type]) do
 		make_effected_by_quality(elevated_rail, function(entity, quality_level)
-			local old_support_range = entity.support_range or 15
-			entity.support_range = old_support_range + math.floor(quality_level / 4 * old_support_range)
-			add_to_description(entity.type, entity, {'description.support-range', tostring(entity.support_range)})
-			if entity.name == 'rail-ramp-uncommon' then error(entity.name..serpent.block(entity.localised_description)) end
-		end, {})
-		add_to_description(elevated_rail.type, elevated_rail, {'description.support-range', tostring(elevated_rail.support_range or 15)})
+			entity.support_range = math.floor(entity.support_range or 15 * get_quality_buff(quality_level))
+		end, {
+			{'description.support-range'}
+		})
 	end
+end
+
+--[[ this crashes factorio
+for _, belt_type in pairs {'transport-belt', 'underground-belt', 'splitter', 'linked-belt', 'lane-splitter', 'loader-1x1', 'loader'} do
+	for _, belt in pairs(data.raw[belt_type]) do
+		make_effected_by_quality(belt, function(entity, quality_level)
+			local old_speed = entity.speed
+			entity.speed = old_speed + old_speed * (quality_level + 1) / 5
+		end, {
+			{'description.belt-speed'}
+		})
+	end
+end--]]
+
+for _, agricultural_tower in pairs(data.raw['agricultural-tower']) do
+	make_effected_by_quality(agricultural_tower, function(entity, quality_level)
+		entity.radius = entity.radius + quality_level / 2
+		
+		local speed = entity.crane.speed
+		speed.arm.turn_rate = (speed.arm.turn_rate or 0.01) * get_quality_buff(quality_level)
+		speed.arm.extension_speed = (speed.arm.extension_speed or 0.05) * get_quality_buff(quality_level)
+		speed.grappler.vertical_turn_rate = (speed.grappler.vertical_turn_rate or 0.01) * get_quality_buff(quality_level)
+		speed.grappler.horizontal_turn_rate = (speed.grappler.horizontal_turn_rate or 0.01) * get_quality_buff(quality_level)
+		speed.grappler.extension_speed = (speed.grappler.extension_speed or 0.01) * get_quality_buff(quality_level)
+	end, {
+		{'description.harvest-speed'},
+		{'description.radius'}
+	})
 end
 
 data:extend(buffed_entities_to_extend)

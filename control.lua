@@ -24,3 +24,12 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
         raise_built = true,
     }
 end)
+
+--[[ broken code until player.cursor_ghost shows the quality
+script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
+    local player = game.get_player(event.player_index)
+    local cursor_ghost = player.cursor_ghost
+    if not cursor_ghost then return end
+    game.print(cursor_ghost)
+end)
+]]--
