@@ -47,7 +47,7 @@ local function make_effected_by_quality(entity, buff_function, quality_descripti
 	for _, localised_key in pairs(quality_description_localised_keys) do
 		add_to_description(entity.type, entity, {'description.quality-diamond', localised_key})
 	end
-	
+
 	for _, quality in pairs(data.raw.quality) do
 		local quality_level = quality.level
 		if quality_level == 0 then goto continue end
@@ -61,7 +61,7 @@ local function make_effected_by_quality(entity, buff_function, quality_descripti
 			{'entity-name.' .. entity.name},
 			{'item-name.' .. entity.name}
 		}
-		
+
 		if not entity.placeable_by then
 			if entity.minable.result then
 				buffed_entity.placeable_by = {item = entity.minable.result, count = entity.minable.count or 1}
@@ -93,13 +93,27 @@ local function make_effected_by_quality(entity, buff_function, quality_descripti
 	}
 end
 
-for _, chest in pairs(data.raw.container) do
-	make_effected_by_quality(chest, function(entity, quality_level)
-		local old_inventory_size = entity.inventory_size
-		entity.inventory_size = old_inventory_size + math.floor(quality_level / 10 * old_inventory_size)
-	end, {
-		{'description.storage-size'}
-	})
+for _, chest_type in pairs {'container', 'logistic-container', 'linked-container'} do
+	for _, chest in pairs(data.raw[chest_type]) do
+		make_effected_by_quality(chest, function(entity, quality_level)
+			local old_inventory_size = entity.inventory_size
+			entity.inventory_size = old_inventory_size + math.floor(quality_level / 10 * old_inventory_size)
+		end, {
+			{'description.storage-size'}
+		})
+	end
+end
+
+for _, elevated_rail_type in pairs {'rail-support', 'rail-ramp'} do
+	for _, elevated_rail in pairs(data.raw[elevated_rail_type]) do
+		make_effected_by_quality(elevated_rail, function(entity, quality_level)
+			local old_support_range = entity.support_range or 15
+			entity.support_range = old_support_range + math.floor(quality_level / 4 * old_support_range)
+			add_to_description(entity.type, entity, {'description.support-range', tostring(entity.support_range)})
+			if entity.name == 'rail-ramp-uncommon' then error(entity.name..serpent.block(entity.localised_description)) end
+		end, {})
+		add_to_description(elevated_rail.type, elevated_rail, {'description.support-range', tostring(elevated_rail.support_range or 15)})
+	end
 end
 
 data:extend(buffed_entities_to_extend)
