@@ -8,7 +8,21 @@
   "factorio_version": "1.2",
   "dependencies": [
     "base",
-    "quality"
+    "quality",
+    "(?) pypostprocessing",
+    "(?) deadlock-beltboxes-loaders",
+    "(?) angelsrefining",
+    "(?) angelspetrochem",
+    "(?) pyindustry",
+    "(?) Flare Stack",
+    "(?) space-exploration",
+    "(?) nullius",
+    "(?) propertyrandomizer",
+    "(?) LunarLandings",
+    "(?) Krastorio2",
+    "(?) IndustrialRevolution3",
+    "(?) exotic-industries",
+    "(?) ReStack"
   ],
   "quality_required": true,
   "space_travel_required": false,

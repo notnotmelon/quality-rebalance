@@ -1,11 +1,51 @@
 local buffed_entities_to_extend = {}
 
-local function make_effected_by_quality(entity, buff_function)
+local function add_to_description(type, prototype, localised_string)
+	if prototype.localised_description and prototype.localised_description ~= '' then
+		prototype.localised_description = {'', prototype.localised_description, '\n', localised_string}
+		return
+	end
+
+	local place_result = prototype.place_result or prototype.placed_as_equipment_result
+	if type == 'item' and place_result then
+		for _, machine in pairs(data.raw) do
+			machine = machine[place_result]
+			if machine and machine.localised_description then
+				prototype.localised_description = {
+					'?',
+					{'', machine.localised_description, '\n', localised_string},
+					localised_string
+				}
+				return
+			end
+		end
+
+		local entity_type = prototype.place_result and 'entity' or 'equipment'
+		prototype.localised_description = {
+			'?',
+			{'', {entity_type .. '-description.' .. place_result}, '\n', localised_string},
+			{'', {type .. '-description.' .. prototype.name},      '\n', localised_string},
+			localised_string
+		}
+	else
+		prototype.localised_description = {
+			'?',
+			{'', {type .. '-description.' .. prototype.name}, '\n', localised_string},
+			localised_string
+		}
+	end
+end
+
+local function make_effected_by_quality(entity, buff_function, quality_description_localised_keys)
 	if entity.hidden then return end
 	if not entity.minable then return end
 	if entity.created_effect then
 		log('Entity ' .. entity.name .. ' already has a created_effect. Skipping quality buff.')
 		return
+	end
+
+	for _, localised_key in pairs(quality_description_localised_keys) do
+		add_to_description(entity.type, entity, {'description.quality-diamond', localised_key})
 	end
 	
 	for _, quality in pairs(data.raw.quality) do
@@ -57,7 +97,9 @@ for _, chest in pairs(data.raw.container) do
 	make_effected_by_quality(chest, function(entity, quality_level)
 		local old_inventory_size = entity.inventory_size
 		entity.inventory_size = old_inventory_size + math.floor(quality_level / 10 * old_inventory_size)
-	end)
+	end, {
+		{'description.storage-size'}
+	})
 end
 
 data:extend(buffed_entities_to_extend)
