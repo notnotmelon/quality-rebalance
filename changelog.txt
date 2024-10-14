@@ -1,0 +1,10 @@
+---------------------------------------------------------------------------------------------------
+Version: 1.0.0
+Date: 2024-10-14
+  Features:
+    - Add descriptions into factoriopedia
+    - Add more entities to quality effected list
+    - add quality diamond to buffed entity descriptions
+    - Added agri towers to quality list
+    - Allow elevated rail to scale with quality
+    - inital commit
