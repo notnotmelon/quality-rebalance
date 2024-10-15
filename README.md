@@ -61,6 +61,15 @@ This mod makes quality effect ALL THE THINGS
 
     - Brightness scales with quality.
 
+### Offshore Pump
+
+    - Pumping speed scales with quality.
+
+### Combinators
+
+    - Energy usage decreases with quality.
+    - At legendary, combinators do not require energy.
+
 ---
 
 # Better factoriopedia integration
