@@ -9,6 +9,8 @@
   "dependencies": [
     "base",
     "quality",
+    "? space-age",
+    "? elevated-rails",
     "(?) pypostprocessing",
     "(?) deadlock-beltboxes-loaders",
     "(?) angelsrefining",
