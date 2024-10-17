@@ -305,7 +305,7 @@ end
 
 for _, pipe_type in pairs{'pipe', 'pipe-to-ground', 'storage-tank'} do
 	for _, pipe in pairs(data.raw[pipe_type]) do
-		make_effected_by_quality(storage_tank, function(entity, quality_level)
+		make_effected_by_quality(pipe, function(entity, quality_level)
 			local fluid_box = entity.fluid_box
 			if not fluid_box then return end
 			local current_extent = fluid_box.max_pipeline_extent or data.raw["utility-constants"]["default"].default_pipeline_extent or 320
@@ -325,6 +325,35 @@ for _, pipe_type in pairs{'pipe', 'pipe-to-ground', 'storage-tank'} do
 				if not fluid_box then return "ERROR" end
 				local current_extent = fluid_box.max_pipeline_extent or data.raw["utility-constants"]["default"].default_pipeline_extent or 320
 				return tostring(current_extent * get_quality_buff(quality_level)) .. " tiles"
+			end}
+		})
+	end
+end
+
+for _, combinator_type in pairs{'decider-combinator', 'arithmetic-combinator', 'selector-combinator'} do
+	for _, combinator in pairs(data.raw[combinator_type]) do
+		make_effected_by_quality(combinator, function(entity, quality_level)
+			local max_power, energy_suffix = parse_energy(entity.active_energy_usage)
+			local new_consumtion = max_power * (1 - (quality_level / 5))
+			if new_consumtion <= 0 then
+				entity.energy_source = {
+					type = "void"
+				}
+			else
+				entity.active_energy_usage = new_consumtion .. energy_suffix
+			end
+		end, {
+			{"description.energy-consumption"}
+		}, {
+			{{"quality-tooltip.energy-efficiency"}, function(entity, quality_level)
+				local active_energy_usage = entity.active_energy_usage
+				local max_power, energy_suffix = parse_energy(active_energy_usage)
+				local new_consumtion = max_power * (1 - (quality_level / 5))
+				if new_consumtion <= 0 then
+					return "0W"
+				else
+					return tostring(new_consumtion) .. energy_suffix
+				end
 			end}
 		})
 	end
