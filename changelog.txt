@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.2.0
+Date: 2024-10-17
+  Features:
+    - PIpes and pipe-to-ground are now buffed by quality. Their storage volume and max extent increase
+    - Removed haste makes waste
+  Locale:
+    - Add german translation from Luzifer Senpai
+---------------------------------------------------------------------------------------------------
 Version: 1.1.0
 Date: 2024-10-16
   Features:
