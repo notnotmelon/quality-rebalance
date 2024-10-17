@@ -305,7 +305,7 @@ end
 
 for _, pipe_type in pairs{'pipe', 'pipe-to-ground', 'storage-tank'} do
 	for _, pipe in pairs(data.raw[pipe_type]) do
-		make_effected_by_quality(storage_tank, function(entity, quality_level)
+		make_effected_by_quality(pipe, function(entity, quality_level)
 			local fluid_box = entity.fluid_box
 			if not fluid_box then return end
 			local current_extent = fluid_box.max_pipeline_extent or data.raw["utility-constants"]["default"].default_pipeline_extent or 320
