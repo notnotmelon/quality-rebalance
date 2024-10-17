@@ -303,17 +303,31 @@ for _, lamp in pairs(data.raw.lamp) do
 	})
 end
 
-for _, storage_tank in pairs(data.raw['storage-tank']) do
-	make_effected_by_quality(storage_tank, function(entity, quality_level)
-		entity.fluid_box.volume = entity.fluid_box.volume * (1 + quality_level / 5)
-	end, {
-		{'description.fluid-capacity'}
-	}, {
-		{{'quality-tooltip.storage-volume'}, function(entity, quality_level)
-			return big_number_si_format(entity.fluid_box.volume * (1 + quality_level / 5))
-		end
-		}
-	})
+for _, pipe_type in pairs{'pipe', 'pipe-to-ground', 'storage-tank'} do
+	for _, pipe in pairs(data.raw[pipe_type]) do
+		make_effected_by_quality(storage_tank, function(entity, quality_level)
+			local fluid_box = entity.fluid_box
+			if not fluid_box then return end
+			local current_extent = fluid_box.max_pipeline_extent or data.raw["utility-constants"]["default"].default_pipeline_extent or 320
+			fluid_box.max_pipeline_extent = current_extent * get_quality_buff(quality_level)
+			fluid_box.volume = fluid_box.volume * (1 + quality_level / 5)
+		end, {
+			{'description.fluid-capacity'},
+			{"description.fluid-extent"}
+		}, {
+			{{"quality-tooltip.storage-volume"}, function(entity, quality_level)
+				local fluid_box = entity.fluid_box
+				if not fluid_box then return "ERROR" end
+				return big_number_si_format(fluid_box.volume * (1 + quality_level / 5))
+			end},
+			{{"quality-tooltip.fluid-extent"}, function(entity, quality_level)
+				local fluid_box = entity.fluid_box
+				if not fluid_box then return "ERROR" end
+				local current_extent = fluid_box.max_pipeline_extent or data.raw["utility-constants"]["default"].default_pipeline_extent or 320
+				return tostring(current_extent * get_quality_buff(quality_level)) .. " tiles"
+			end}
+		})
+	end
 end
 
 data:extend(buffed_entities_to_extend)
